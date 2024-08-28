@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 import static java.time.Month.AUGUST;
@@ -27,7 +26,7 @@ public class FilmControllerTest {
                 .name("Name")
                 .description("Description")
                 .releaseDate(LocalDate.now())
-                .duration(Duration.ZERO)
+                .duration(144)
                 .build();
 
         assertDoesNotThrow(() -> filmController.validate(film));
@@ -39,7 +38,7 @@ public class FilmControllerTest {
                 .name("")
                 .description("Description")
                 .releaseDate(LocalDate.now())
-                .duration(Duration.ZERO)
+                .duration(144)
                 .build();
 
         assertThrows(ValidationException.class, () -> filmController.validate(film));
@@ -55,7 +54,7 @@ public class FilmControllerTest {
                         + "some physical and chemical experiments were carried out. It is suggested that "
                         + "that the murdered man was a certain engineer Pyotr Petrovich Garin.")
                 .releaseDate(LocalDate.now())
-                .duration(Duration.ZERO)
+                .duration(144)
                 .build();
 
         assertThrows(ValidationException.class, () -> filmController.validate(film));
@@ -67,7 +66,7 @@ public class FilmControllerTest {
                 .name("Name")
                 .description("Description")
                 .releaseDate(LocalDate.of(1894, AUGUST, 22))
-                .duration(Duration.ZERO)
+                .duration(144)
                 .build();
 
         assertThrows(ValidationException.class, () -> filmController.validate(film));
@@ -79,7 +78,7 @@ public class FilmControllerTest {
                 .name("Name")
                 .description("Description")
                 .releaseDate(LocalDate.now())
-                .duration(Duration.ofMinutes(-30))
+                .duration(-30)
                 .build();
 
         assertThrows(ValidationException.class, () -> filmController.validate(film));

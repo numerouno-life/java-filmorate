@@ -82,7 +82,7 @@ public class FilmController {
             throw new ValidationException(msg);
         }
 
-        if (film.getDuration().isNegative()) {
+        if (film.getDuration() <= 0) {
             String msg = "The length of the movie must be a positive number.";
             log.error(msg);
             throw new ValidationException(msg);
