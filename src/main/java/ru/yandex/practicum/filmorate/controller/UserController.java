@@ -38,7 +38,7 @@ public class UserController {
     public User update(@RequestBody User newUser) {
         log.debug("PUT /users with {}", newUser);
         if (newUser.getId() == null || !users.containsKey(newUser.getId())) {
-            throw new ValidationException("Пользователь с таким id не найден.");
+            throw new ValidationException("User with ID:" + newUser.getId() + " not found.");
         }
 
         validate(newUser);

@@ -38,7 +38,7 @@ public class FilmController {
     public Film update(@RequestBody Film newFilm) {
         log.debug("PUT /films with {}", newFilm);
         if (newFilm.getId() == null || !films.containsKey(newFilm.getId())) {
-            String msg = "No movie with this ID was found.";
+            String msg = "Movie with ID:" + newFilm.getId() + " not found.";
             log.error(msg);
             throw new ValidationException(msg);
         }
