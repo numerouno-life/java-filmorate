@@ -35,18 +35,7 @@ public class UserControllerTest {
         assertDoesNotThrow(() -> userController.validate(user));
     }
 
-    @Test
-    public void whenUserNameAndLoginIsEmptyThenThrowValidationException() {
-        User user = User.builder()
-                .email("practicum@yandex.ru")
-                .login("")
-                .birthday(LocalDate.now())
-                .name("")
-                .friends(Set.of(1L))
-                .build();
-
-        assertThrows(ValidationException.class, () -> userController.validate(user));
-    }
+    // убрал тест проверки на пустое имя и логин. Теперь проверка идёт с помощью аннотации
 
     @Test
     public void shouldThrowExceptionIfEmailIsBlankOrNotContainsSymbolAt() {
@@ -72,29 +61,7 @@ public class UserControllerTest {
         assertThrows(ValidationException.class, () -> userController.validate(user1));
     }
 
-    @Test
-    public void shouldThrowExceptionIfLoginIsEmptyOrContainsSpace() {
-        User user = User.builder()
-                .email("practicum@yandex.ru")
-                .login("")
-                .birthday(LocalDate.now())
-                .name("name")
-                .friends(Set.of(1L))
-                .build();
-
-        assertThrows(ValidationException.class, () -> userController.validate(user));
-
-        //ContainsSpace
-        User user1 = User.builder()
-                .email("practicum@yandex.ru")
-                .login(" ")
-                .birthday(LocalDate.now())
-                .name("name")
-                .friends(Set.of(1L))
-                .build();
-
-        assertThrows(ValidationException.class, () -> userController.validate(user1));
-    }
+    // убрал тест на пробелы. Теперь проверка идёт с помощью аннотации
 
     @Test
     public void shouldThrowExceptionIfBirthdayInFuture() {
