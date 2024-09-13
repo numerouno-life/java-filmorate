@@ -2,26 +2,24 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    UserController userController;
+    private UserController userController;
+    private UserService userService;
 
     @BeforeEach
     public void setUp() {
-        userController = new UserController();
+        userController = new UserController(userService);
     }
 
     @Test
@@ -31,6 +29,7 @@ public class UserControllerTest {
                 .login("login")
                 .birthday(LocalDate.now())
                 .name("name")
+                .friends(Set.of(1L))
                 .build();
 
         assertDoesNotThrow(() -> userController.validate(user));
@@ -43,6 +42,7 @@ public class UserControllerTest {
                 .login("")
                 .birthday(LocalDate.now())
                 .name("")
+                .friends(Set.of(1L))
                 .build();
 
         assertThrows(ValidationException.class, () -> userController.validate(user));
@@ -55,6 +55,7 @@ public class UserControllerTest {
                 .login("login")
                 .birthday(LocalDate.now())
                 .name("name")
+                .friends(Set.of(1L))
                 .build();
 
         assertThrows(ValidationException.class, () -> userController.validate(user));
@@ -65,6 +66,7 @@ public class UserControllerTest {
                 .login("login")
                 .birthday(LocalDate.now())
                 .name("name")
+                .friends(Set.of(1L))
                 .build();
 
         assertThrows(ValidationException.class, () -> userController.validate(user1));
@@ -77,6 +79,7 @@ public class UserControllerTest {
                 .login("")
                 .birthday(LocalDate.now())
                 .name("name")
+                .friends(Set.of(1L))
                 .build();
 
         assertThrows(ValidationException.class, () -> userController.validate(user));
@@ -87,6 +90,7 @@ public class UserControllerTest {
                 .login(" ")
                 .birthday(LocalDate.now())
                 .name("name")
+                .friends(Set.of(1L))
                 .build();
 
         assertThrows(ValidationException.class, () -> userController.validate(user1));
@@ -99,6 +103,7 @@ public class UserControllerTest {
                 .login("login")
                 .birthday(LocalDate.now().plusDays(1))
                 .name("name")
+                .friends(Set.of(1L))
                 .build();
 
         assertThrows(ValidationException.class, () -> userController.validate(user));
