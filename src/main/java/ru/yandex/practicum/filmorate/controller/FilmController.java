@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -24,25 +23,27 @@ public class FilmController {
 
     //добавление фильма
     @PostMapping
-    public ResponseEntity<Film> addFilm(@RequestBody Film film) {
+    public Film addFilm(@RequestBody Film film) {
         log.debug("POST /films with {}", film);
         log.info("Film added successful {}", film);
-        return ResponseEntity.ok(filmService.addFilm(film));
+        return filmService.addFilm(film);
     }
 
     //обновление фильма
-    @PutMapping
-    public ResponseEntity<Film> update(@RequestBody Film film) {
-        log.debug("PUT /films with {}", film);
-        log.info("Film update successful {}", film);
-        return ResponseEntity.ok(filmService.update(film));
+    @PutMapping("/{id}")
+    public Film update(@PathVariable Long id, @RequestBody Film film) {
+        log.debug("PUT /films/{} with {}", id, film);
+        if (!id.equals(film.getId())) {
+            throw new IllegalArgumentException("ID in path and ID in request body do not match");
+        }
+        return filmService.update(film);
     }
 
     //получение всех фильмов
     @GetMapping
-    public ResponseEntity<Collection<Film>> getAllFilms() {
+    public Collection<Film> getAllFilms() {
         log.debug("GET /films");
-        return ResponseEntity.ok(filmService.getAllFilms());
+        return filmService.getAllFilms();
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -62,6 +63,5 @@ public class FilmController {
         log.debug("GET /popular?count={count}");
         return filmService.getMostPopularFilms(count);
     }
-
 
 }

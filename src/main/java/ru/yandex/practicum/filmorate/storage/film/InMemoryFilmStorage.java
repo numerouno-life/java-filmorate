@@ -21,20 +21,16 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        if (films.containsKey(film.getId())) {
-            log.error("Film with id {} already exist", film.getId());
-            throw new DuplicatedDataException("Film with id " + film.getId() + " already exist");
+        if (film.getId() != null && films.containsKey(film.getId())) {
+            log.error("Film with id {} already exists", film.getId());
+            throw new DuplicatedDataException("Film with id " + film.getId() + " already exists");
         }
-        if (film.getId() == 0) {
-            log.info("Making the film");
+        if (film.getId() == null) {
             film.setId(getNextId());
-            films.put(film.getId(), film);
-            log.info("Movie added {}", film);
-            return film;
-        } else {
-            log.error("Unknown error while creating movie");
-            throw new RuntimeException("Unknown error while creating movie");
         }
+        films.put(film.getId(), film);
+        log.info("Film added: {}", film);
+        return film;
     }
 
     @Override
@@ -49,14 +45,17 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        log.info("Update film");
-        if (film.getId() == null || !films.containsKey(film.getId())) {
-            String msg = "Movie with ID:" + film.getId() + " not found.";
-            log.error("Movie with ID: {} not found.", film.getId());
+        if (film.getId() == null) {
+            log.error("Film ID is null");
+            throw new IllegalArgumentException("Film ID cannot be null");
+        }
+        if (!films.containsKey(film.getId())) {
+            String msg = "Film with ID " + film.getId() + " not found.";
+            log.error(msg);
             throw new NotFoundException(msg);
         }
         films.put(film.getId(), film);
-        log.info("Film with ID: {} was update", film.getId());
+        log.info("Film with ID {} updated successfully", film.getId());
         return film;
     }
 

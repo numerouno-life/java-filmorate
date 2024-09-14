@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -10,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
@@ -20,6 +22,7 @@ public class FilmService {
     }
 
     public Film addFilm(Film film) {
+        log.debug("Attempting to add film: {}", film);
         return filmStorage.addFilm(film);
     }
 
@@ -34,20 +37,34 @@ public class FilmService {
     public Film addLike(Long filmId, Long userId) {
         Film film = filmStorage.getFilmById(filmId);
         if (film == null) {
-            String msg = "Movie with ID:" + filmId + " not found.";
+            String msg = "Film with ID: " + filmId + " not found.";
+            log.error(msg);
             throw new NotFoundException(msg);
         }
-        film.getLikes().add(userId); // Добавляем пользователя в Set лайков
+        if (film.getLikes().contains(userId)) {
+            String msg = "User with ID: " + userId + " has already liked this film.";
+            log.warn(msg);
+            throw new RuntimeException(msg);
+        }
+        film.getLikes().add(userId);
+        log.info("User with ID: {} liked film with ID: {}", userId, filmId);
         return film;
     }
 
     public Film removeLike(Long filmId, Long userId) {
         Film film = filmStorage.getFilmById(filmId);
         if (film == null) {
-            String msg = "Movie with ID:" + filmId + " not found.";
+            String msg = "Film with ID: " + filmId + " not found.";
+            log.error("Film with ID: {} not found.", filmId);
             throw new NotFoundException(msg);
         }
-        film.getLikes().remove(userId);// Убираем пользователя из Set лайков
+        if (!film.getLikes().contains(userId)) {
+            String msg = "User with ID: " + userId + " has not liked this film.";
+            log.warn(msg);
+            throw new RuntimeException(msg);
+        }
+        film.getLikes().remove(userId);
+        log.info("User with ID: {} removed like from film with ID: {}", userId, filmId);
         return film;
     }
 

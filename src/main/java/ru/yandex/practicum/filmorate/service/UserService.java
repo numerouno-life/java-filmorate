@@ -8,10 +8,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.UserStorage;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,7 +34,11 @@ public class UserService {
     }
 
     public User getUserById(Long userId) {
-        return userStorage.getUserById(userId);
+        User user = userStorage.getUserById(userId);
+        if (user == null) {
+            throw new NotFoundException("User with id " + userId + " not found");
+        }
+        return user;
     }
 
     public User addFriend(User userFrom, User userTo) {
@@ -47,8 +48,8 @@ public class UserService {
         if (userTo.getFriends() == null) {
             userTo.setFriends(new HashSet<>());
         }
-        if (userFrom.getFriends().contains(userTo.getId()) || userTo.getFriends().contains(userFrom.getId())) {
-            log.error("Пользователи уже являются друзьями");
+        if ((userFrom.getFriends().contains(userTo.getId())) | (userTo.getFriends().contains(userFrom.getId()))) {
+            log.error("Пользователи в друзьях");
             throw new DuplicatedDataException("Пользователи уже в друзьях");
         }
         Set<Long> friendsFrom = userFrom.getFriends();
@@ -59,7 +60,7 @@ public class UserService {
         userTo.setFriends(friendsTo);
         userStorage.updateUser(userFrom);
         userStorage.updateUser(userTo);
-        log.info("Пользователь {} добавлен в друзья к пользователю {}", userFrom, userTo);
+        log.info("Пользователь {} добавлен в друзья к пользовалю {}", userFrom, userTo);
 
         return userFrom;
     }
@@ -88,10 +89,11 @@ public class UserService {
 
     public List<User> getFriends(Long userId) {
         User user = getUserById(userId);
-        if (user == null) {
-            throw new NotFoundException("User not found");
-        }
         Set<Long> friendsId = user.getFriends();
+        if (friendsId == null || friendsId.isEmpty()) {
+            log.info("No friends found for user with id {}", userId);
+            return Collections.emptyList();
+        }
         return friendsId.stream()
                 .map(userStorage::getUserById)
                 .collect(Collectors.toList());
