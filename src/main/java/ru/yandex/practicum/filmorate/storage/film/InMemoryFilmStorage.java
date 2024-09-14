@@ -1,16 +1,17 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
@@ -20,61 +21,60 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        return film;
+        if (films.containsKey(film.getId())) {
+            log.error("Film with id {} already exist", film.getId());
+            throw new DuplicatedDataException("Film with id " + film.getId() + " already exist");
+        }
+        if (film.getId() == 0) {
+            log.info("Making the film");
+            film.setId(getNextId());
+            films.put(film.getId(), film);
+            log.info("Movie added {}", film);
+            return film;
+        } else {
+            log.error("Unknown error while creating movie");
+            throw new RuntimeException("Unknown error while creating movie");
+        }
+    }
+
+    @Override
+    public String removeFilm(Film film) {
+        if (films.containsKey(film.getId())) {
+            log.trace("remove film with id: {}", film.getId());
+            films.remove(film.getId());
+            return "Film with id: " + film.getId() + " was removed";
+        }
+        throw new NotFoundException("Film with id: " + film.getId() + " not found");
     }
 
     @Override
     public Film update(Film film) {
+        log.info("Update film");
         if (film.getId() == null || !films.containsKey(film.getId())) {
             String msg = "Movie with ID:" + film.getId() + " not found.";
+            log.error("Movie with ID: {} not found.", film.getId());
             throw new NotFoundException(msg);
         }
         films.put(film.getId(), film);
+        log.info("Film with ID: {} was update", film.getId());
         return film;
     }
 
     @Override
     public Collection<Film> getAllFilms() {
+        log.info("Returned all films");
         return films.values();
     }
 
     @Override
     public Film getFilmById(Long id) {
+        log.info("Get film by id {}", id);
         if (!films.containsKey(id)) {
             String msg = "Movie with ID:" + id + " not found.";
+            log.error("Movie with ID:{} not found.", id);
             throw new NotFoundException(msg);
         }
         return films.get(id);
-    }
-
-    @Override
-    public void addLike(Long filmId, Long userId) {
-        Film film = films.get(filmId);
-        if (film == null) {
-            String msg = "Movie with ID:" + filmId + " not found.";
-            throw new NotFoundException(msg);
-        }
-        film.getLikes().add(userId); // Добавляем пользователя в Set лайков
-    }
-
-    @Override
-    public void removeLike(Long filmId, Long userId) {
-        Film film = films.get(filmId);
-        if (film == null) {
-            String msg = "Movie with ID:" + filmId + " not found.";
-            throw new NotFoundException(msg);
-        }
-        film.getLikes().remove(userId);// Убираем пользователя из Set лайков
-    }
-
-    @Override
-    public List<Film> getMostPopularFilms(int count) {
-        return films.values().stream()
-                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
     }
 
     private long getNextId() {

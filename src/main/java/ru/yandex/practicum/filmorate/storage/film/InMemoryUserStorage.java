@@ -1,13 +1,16 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
@@ -17,81 +20,45 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
+        if (users.containsKey(user.getId())) {
+            log.error("User with id: {} already exist", user.getId());
+        }
+        log.info("Making the user");
         user.setId(getNextId());
         users.put(user.getId(), user);
+        log.info("User added {}", user);
         return user;
     }
 
     @Override
-    public User update(User user) {
+    public User updateUser(User user) {
+        log.info("Update user");
         if (user.getId() == null || !users.containsKey(user.getId())) {
             String msg = "User with ID:" + user.getId() + " not found.";
+            log.error("User with ID:{} not found.", user.getId());
             throw new NotFoundException(msg);
         }
         users.put(user.getId(), user);
+        log.info("user with ID: {} was update", user.getId());
         return user;
     }
 
     @Override
     public Collection<User> getAllUser() {
+        log.info("Returned all users");
         return users.values();
     }
 
-    @Override
-    public User getUserById(Long userId) {
-        User user = users.get(userId);
-        if (user == null) {
-            String msg = "User with ID:" + userId + " not found.";
-            throw new NotFoundException(msg);
+    public User getUserById(Long id) {
+        log.info("Получен запрос на получение пользоваетля с id: {}", id);
+        if (users.containsKey(id)) {
+            log.trace("Пользоваетль с id: {} найден", id);
+            return users.get(id);
         }
-        return user;
+        throw new NotFoundException("Пользователь с id = " + id + " не найден");
     }
-
-    @Override
-    public void addFriend(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-        update(user);
-        update(friend);
-    }
-
-    @Override
-    public void removeFriend(Long userId, Long friendId) {
-        User user = users.get(userId);
-        User friend = users.get(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-        update(user);
-        update(friend);
-    }
-
-    @Override
-    public List<User> getFriends(Long userId) {
-        User user = getUserById(userId);
-        Set<Long> friendsId = user.getFriends();
-        return friendsId.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<User> getCommonFriends(Long userId, Long otherId) {
-        Set<Long> userFriends = users.get(userId).getFriends();
-        Set<Long> otherFriends = users.get(otherId).getFriends();
-        Set<Long> commonFriends = new HashSet<>(userFriends);
-        commonFriends.retainAll(otherFriends);
-
-        return commonFriends.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
-    }
-
 
     private long getNextId() {
         return currentId++;
     }
-
-
 }
