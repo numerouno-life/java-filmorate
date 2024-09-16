@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.UserStorage;
 
@@ -33,12 +33,8 @@ public class UserService {
         return userStorage.getAllUser();
     }
 
-    public User getUserById(Long userId) {
-        User user = userStorage.getUserById(userId);
-        if (user == null) {
-            throw new NotFoundException("User with id " + userId + " not found");
-        }
-        return user;
+    public User getUserById(Long id) {
+        return userStorage.getUserById(id);
     }
 
     public User addFriend(User userFrom, User userTo) {
@@ -49,8 +45,8 @@ public class UserService {
             userTo.setFriends(new HashSet<>());
         }
         if ((userFrom.getFriends().contains(userTo.getId())) | (userTo.getFriends().contains(userFrom.getId()))) {
-            log.error("Пользователи в друзьях");
-            throw new DuplicatedDataException("Пользователи уже в друзьях");
+            log.error("Users are already friends");
+            throw new DuplicatedDataException("Users are already friends");
         }
         Set<Long> friendsFrom = userFrom.getFriends();
         Set<Long> friendsTo = userTo.getFriends();
@@ -60,29 +56,35 @@ public class UserService {
         userTo.setFriends(friendsTo);
         userStorage.updateUser(userFrom);
         userStorage.updateUser(userTo);
-        log.info("Пользователь {} добавлен в друзья к пользовалю {}", userFrom, userTo);
+        log.info("User:{} and User:{} now friends", userFrom, userTo);
 
         return userFrom;
     }
 
     public User removeFriend(User userFrom, User userTo) {
-        if (userFrom.getFriends() == null || userTo.getFriends() == null) {
-            log.error("Один из пользователей не имеет списка друзей");
-            throw new NotFoundException("Один из пользователей не найден в списке друзей");
+        if (userFrom == null || userTo == null) {
+            throw new NotFoundException("User or friend not found");
         }
+
+        if (userFrom.getFriends() == null) {
+            userFrom.setFriends(new HashSet<>());
+        }
+        if (userTo.getFriends() == null) {
+            userTo.setFriends(new HashSet<>());
+        }
+
         if (!userFrom.getFriends().contains(userTo.getId()) || !userTo.getFriends().contains(userFrom.getId())) {
-            log.error("Пользователи не являются друзьями");
-            throw new NotFoundException("Пользователи не являются друзьями");
+            log.info("User:{} and User:{} are not friends,no removal required", userTo.getId(), userFrom.getId());
+            return userFrom;
         }
-        Set<Long> friendsFrom = userFrom.getFriends();
-        Set<Long> friendsTo = userTo.getFriends();
-        friendsFrom.remove(userTo.getId());
-        friendsTo.remove(userFrom.getId());
-        userFrom.setFriends(friendsFrom);
-        userTo.setFriends(friendsTo);
+
+        userFrom.getFriends().remove(userTo.getId());
+        userTo.getFriends().remove(userFrom.getId());
+
         userStorage.updateUser(userFrom);
         userStorage.updateUser(userTo);
-        log.info("Пользователь {} удален из друзей пользователя {}", userTo, userFrom);
+
+        log.info("User:{} removed from user's friends User:{}", userTo.getId(), userFrom.getId());
 
         return userFrom;
     }
@@ -104,7 +106,7 @@ public class UserService {
         Set<Long> otherFriends = getUserById(userTo.getId()).getFriends();
         Set<Long> commonFriends = new HashSet<>(userFriends);
         commonFriends.retainAll(otherFriends);
-        log.trace("Общие друзья пользователя {}", commonFriends.retainAll(otherFriends));
+        log.trace("Mutual friends of the user:{}", commonFriends.retainAll(otherFriends));
 
         return commonFriends.stream()
                 .map(userStorage::getUserById)

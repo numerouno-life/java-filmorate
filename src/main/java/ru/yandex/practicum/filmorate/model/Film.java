@@ -10,7 +10,6 @@ import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.validators.MinimumDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -21,23 +20,23 @@ import java.util.Set;
 public class Film {
     private Long id;
 
-    @NotBlank(message = "Название фильма не может быть пустым")
-    @NotNull(message = "Название фильма не может быть не заполнено")
+    @NotBlank(message = "Movie title cannot be empty")
+    @NotNull(message = "Movie title must be filled in")
     private String name;
 
-    @NotNull(message = "Описание не может быть пустым")
-    @NotBlank(message = "Описание не может быть пустым")
-    @Length(max = 200, message = "Длина не может быть более 200 символов")
+    @NotNull(message = "Description cannot be empty")
+    @NotBlank(message = "Description must be filled in")
+    @Length(max = 200, message = "Maximum length 200 characters")
     private String description;
 
-    @NotNull(message = "Дата должна быть заполнена")
-    @PastOrPresent(message = "Дата не может быть в будущем")
+    @NotNull(message = "Date cannot be empty")
+    @PastOrPresent(message = "Date cannot be in the future")
     @MinimumDate
     private LocalDate releaseDate;
 
-    @NotNull(message = "Продолжительность фильма должна быть заполнена")
+    @NotNull(message = "Film duration cannot be empty")
     @Min(1)
     private long duration;
 
-    private Set<Long> likes = new HashSet<>();
+    private Set<Long> likes;
 }

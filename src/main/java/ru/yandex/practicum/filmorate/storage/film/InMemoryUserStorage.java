@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -32,14 +32,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        log.info("Update user");
         if (user.getId() == null || !users.containsKey(user.getId())) {
-            String msg = "User with ID:" + user.getId() + " not found.";
             log.error("User with ID:{} not found.", user.getId());
-            throw new NotFoundException(msg);
+            throw new NotFoundException("User with ID: " + user.getId() + " not found.");
         }
         users.put(user.getId(), user);
-        log.info("user with ID: {} was update", user.getId());
         return user;
     }
 
@@ -49,16 +46,19 @@ public class InMemoryUserStorage implements UserStorage {
         return users.values();
     }
 
-    public User getUserById(Long id) {
-        log.info("Получен запрос на получение пользоваетля с id: {}", id);
-        if (users.containsKey(id)) {
-            log.trace("Пользоваетль с id: {} найден", id);
-            return users.get(id);
+    public User getUserById(Long userId) {
+        if (users.containsKey(userId)) {
+            return users.get(userId);
         }
-        throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        throw new NotFoundException("Not found user with ID:" + userId);
     }
 
     private long getNextId() {
-        return currentId++;
+        long currentMaxId = users.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
+        return ++currentMaxId;
     }
 }

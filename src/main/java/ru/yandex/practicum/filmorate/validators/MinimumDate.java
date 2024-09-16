@@ -10,7 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 @Constraint(validatedBy = MinimumDateValidator.class)
 @Past
 public @interface MinimumDate {
-    String message() default "Дата не может быть раньше {value}";
+    String message() default "The date cannot be earlier {value}";
 
     Class<?>[] groups() default {};
 

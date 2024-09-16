@@ -1,13 +1,18 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -15,53 +20,69 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
+    private final UserService userService;
 
     @Autowired
-    public FilmController(FilmService filmService) {
+    public FilmController(FilmService filmService, UserService userService) {
         this.filmService = filmService;
+        this.userService = userService;
     }
 
-    //добавление фильма
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-        log.debug("POST /films with {}", film);
-        log.info("Film added successful {}", film);
-        return filmService.addFilm(film);
+    public ResponseEntity<Film> createFilm(@Valid @RequestBody Film film) {
+        return new ResponseEntity<>(filmService.addFilm(film), HttpStatus.CREATED);
     }
 
-    //обновление фильма
-    @PutMapping("/{id}")
-    public Film update(@PathVariable Long id, @RequestBody Film film) {
-        log.debug("PUT /films/{} with {}", id, film);
-        if (!id.equals(film.getId())) {
-            throw new IllegalArgumentException("ID in path and ID in request body do not match");
-        }
+    // Обновление фильма
+    @PutMapping
+    public Film update(@Valid @RequestBody Film film) {
         return filmService.update(film);
     }
 
-    //получение всех фильмов
+    // Получение всех фильмов
     @GetMapping
     public Collection<Film> getAllFilms() {
         log.debug("GET /films");
         return filmService.getAllFilms();
     }
 
+    // Добавление лайка фильму
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable Long id, @PathVariable Long userId) {
+    public ResponseEntity<Film> addLike(@PathVariable Long id, @PathVariable Long userId) {
+        Film film = filmService.getFilmById(id);
+        User user = userService.getUserById(userId);
+
+        if (film == null || user == null) {
+            throw new NotFoundException("Film or user not found");
+        }
+
+        filmService.addLikeToFilm(film, user);
         log.debug("PUT /{}/like/{}", id, userId);
-        return filmService.addLike(id, userId);
+
+        return ResponseEntity.ok(filmService.getFilmById(id));
     }
 
+    // Удаление лайка у фильма
     @DeleteMapping("/{id}/like/{userId}")
-    public Film removeLike(@PathVariable Long id, @PathVariable Long userId) {
+    public ResponseEntity<Film> removeLike(@PathVariable Long id, @PathVariable Long userId) {
         log.debug("DELETE /{}like/{}", id, userId);
-        return filmService.removeLike(id, userId);
+
+        Film film = filmService.getFilmById(id);
+        if (film == null) {
+            throw new NotFoundException("Film with id: " + id + " not found.");
+        }
+
+        User user = userService.getUserById(userId);
+        if (user == null) {
+            throw new NotFoundException("User with id: " + userId + " not found.");
+        }
+
+        filmService.removeLike(id, userId);
+        return ResponseEntity.ok(film);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        log.debug("GET /popular?count={count}");
-        return filmService.getMostPopularFilms(count);
+    public Collection<Film> getMostPopularFilms(@RequestParam(required = false, defaultValue = "10") String count) {
+        return filmService.getMostPopularFilms(Integer.parseInt(count));
     }
-
 }

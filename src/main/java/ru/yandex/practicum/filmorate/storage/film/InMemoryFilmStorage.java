@@ -3,8 +3,9 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
@@ -22,14 +23,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         if (film.getId() != null && films.containsKey(film.getId())) {
-            log.error("Film with id {} already exists", film.getId());
-            throw new DuplicatedDataException("Film with id " + film.getId() + " already exists");
+            throw new DuplicatedDataException("Film with ID " + film.getId() + " already exists");
         }
+
         if (film.getId() == null) {
             film.setId(getNextId());
         }
+
         films.put(film.getId(), film);
-        log.info("Film added: {}", film);
         return film;
     }
 
@@ -45,18 +46,21 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        if (film.getId() == null) {
-            log.error("Film ID is null");
-            throw new IllegalArgumentException("Film ID cannot be null");
+        log.info("Update film");
+        if (film.getId() == 0 || film.getId() < 0) {
+            log.error("ID cannot be less than 0");
+            throw new ConditionsNotMetException("ID cannot be less than 0");
         }
-        if (!films.containsKey(film.getId())) {
-            String msg = "Film with ID " + film.getId() + " not found.";
-            log.error(msg);
-            throw new NotFoundException(msg);
+        if (films.containsKey(film.getId())) {
+            Film oldFilm = films.get(film.getId());
+            oldFilm.setDescription(film.getDescription());
+            oldFilm.setDuration(film.getDuration());
+            oldFilm.setName(film.getName());
+            oldFilm.setReleaseDate(film.getReleaseDate());
+            oldFilm.setLikes(film.getLikes());
+            return oldFilm;
         }
-        films.put(film.getId(), film);
-        log.info("Film with ID {} updated successfully", film.getId());
-        return film;
+        throw new NotFoundException("Film with ID:" + film.getId() + " not found");
     }
 
     @Override
@@ -66,7 +70,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilmById(Long id) {
+    public Film getFilmById(long id) {
         log.info("Get film by id {}", id);
         if (!films.containsKey(id)) {
             String msg = "Movie with ID:" + id + " not found.";
@@ -77,8 +81,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     private long getNextId() {
-        return currentId++;
+        long currentMaxId = films.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
+        return ++currentMaxId;
     }
-
-
 }

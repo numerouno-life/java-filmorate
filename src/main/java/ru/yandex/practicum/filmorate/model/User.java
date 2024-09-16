@@ -16,19 +16,20 @@ public class User {
 
     private Long id;
 
-    @NotNull(message = "Email должен быть заполнен")
-    @Email(message = "Ошибка валидации email")
-    @NotBlank(message = "Email должен быть заполнен")
+    @NotNull(message = "Email must be filled in")
+    @Email(message = "Email validation error")
+    @NotBlank(message = "Email cannot be empty")
     private String email;
 
-    @NotNull(message = "Логин должен быть заполнен")
-    @NotBlank(message = "Логин должен быть заполнен")
+    @NotNull(message = "Login must be filled in")
+    @NotBlank(message = "Login cannot be empty")
     private String login;
 
+    @NotBlank
     private String name;
 
-    @NotNull(message = "Дата рождения должна быть заполнена")
-    @Past(message = "Ошибка валидации даты рождения, дата должна быть меньше текущей даты")
+    @NotNull(message = "Date of birth must be filled in")
+    @Past(message = "Date must not be greater than current date")
     private LocalDate birthday;
 
     private Set<Long> friends;

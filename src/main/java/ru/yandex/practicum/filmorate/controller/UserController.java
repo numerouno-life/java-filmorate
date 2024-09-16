@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundUserException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -57,30 +59,24 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}")
     public User addFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        log.debug("PUT /users/{}/friends/{}", id, friendId);
         User user = userService.getUserById(id);
         User friend = userService.getUserById(friendId);
-
         if (user == null || friend == null) {
             throw new NotFoundException("User or friend not found");
         }
-
         return userService.addFriend(user, friend);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public ResponseEntity<Void> removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
         log.debug("DELETE /users/{}/friends/{}", id, friendId);
         User user = userService.getUserById(id);
         User friend = userService.getUserById(friendId);
-
         if (user == null || friend == null) {
-            throw new NotFoundException("User or friend not found");
+            throw new NotFoundUserException("User or friend not found");
         }
-        if (!user.getFriends().contains(friendId)) {
-            throw new NotFoundException("Friend not found in the user's friend list");
-        }
-        return userService.removeFriend(user, friend);
+        userService.removeFriend(user, friend);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/friends")
