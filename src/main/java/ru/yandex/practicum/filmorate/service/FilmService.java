@@ -16,10 +16,12 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserService userService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.userService = userService;
     }
 
     public Film addFilm(Film film) {
@@ -36,7 +38,9 @@ public class FilmService {
         return filmStorage.getAllFilms();
     }
 
-    public void addLikeToFilm(Film film, User user) {
+    public void addLikeToFilm(Long filmId, Long userId) {
+        Film film = getFilmById(filmId);
+        User user = userService.getUserById(userId);
         if (film.getLikes() == null) {
             film.setLikes(new HashSet<>());
         }
@@ -48,12 +52,16 @@ public class FilmService {
         film.getLikes().add(user.getId());
     }
 
-    public Film removeLike(Long filmId, Long userId) {
+    public void removeLike(Long filmId, Long userId) {
         Film film = filmStorage.getFilmById(filmId);
+        User user = userService.getUserById(userId);
         if (film == null) {
             String msg = "Film with ID: " + filmId + " not found.";
             log.error("Film with ID: {} not found.", filmId);
             throw new NotFoundException(msg);
+        }
+        if (user == null) {
+            throw new NotFoundException("User with id: " + userId + " not found.");
         }
         if (!film.getLikes().contains(userId)) {
             String msg = "User with ID: " + userId + " has not liked this film.";
@@ -62,7 +70,6 @@ public class FilmService {
         }
         film.getLikes().remove(userId);
         log.info("User with ID: {} removed like from film with ID: {}", userId, filmId);
-        return film;
     }
 
     public List<Film> getMostPopularFilms(int count) {

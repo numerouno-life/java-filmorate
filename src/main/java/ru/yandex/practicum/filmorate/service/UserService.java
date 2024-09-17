@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,63 +34,70 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
+        User user = userStorage.getUserById(id);
+        if (user == null) {
+            throw new NotFoundException("User with id " + id + " not found");
+        }
         return userStorage.getUserById(id);
     }
 
-    public User addFriend(User userFrom, User userTo) {
-        if (userFrom.getFriends() == null) {
-            userFrom.setFriends(new HashSet<>());
-        }
-        if (userTo.getFriends() == null) {
-            userTo.setFriends(new HashSet<>());
-        }
-        if ((userFrom.getFriends().contains(userTo.getId())) | (userTo.getFriends().contains(userFrom.getId()))) {
-            log.error("Users are already friends");
-            throw new DuplicatedDataException("Users are already friends");
-        }
-        Set<Long> friendsFrom = userFrom.getFriends();
-        Set<Long> friendsTo = userTo.getFriends();
-        friendsFrom.add(userTo.getId());
-        friendsTo.add(userFrom.getId());
-        userFrom.setFriends(friendsFrom);
-        userTo.setFriends(friendsTo);
-        userStorage.updateUser(userFrom);
-        userStorage.updateUser(userTo);
-        log.info("User:{} and User:{} now friends", userFrom, userTo);
-
-        return userFrom;
-    }
-
-    public User removeFriend(User userFrom, User userTo) {
-        if (userFrom == null || userTo == null) {
+    public void addFriend(Long userId, Long friendId) {
+        User user = getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+        if (user == null || friend == null) {
             throw new NotFoundException("User or friend not found");
         }
 
-        if (userFrom.getFriends() == null) {
-            userFrom.setFriends(new HashSet<>());
+        if (user.getFriends() == null) {
+            user.setFriends(new HashSet<>());
         }
-        if (userTo.getFriends() == null) {
-            userTo.setFriends(new HashSet<>());
+        if (friend.getFriends() == null) {
+            friend.setFriends(new HashSet<>());
+        }
+        if ((user.getFriends().contains(friend.getId())) | (friend.getFriends().contains(user.getId()))) {
+            log.error("Users are already friends");
+            throw new DuplicatedDataException("Users are already friends");
+        }
+        Set<Long> friendsFrom = user.getFriends();
+        Set<Long> friendsTo = friend.getFriends();
+        friendsFrom.add(friend.getId());
+        friendsTo.add(user.getId());
+        user.setFriends(friendsFrom);
+        log.info("User:{} and User:{} now friends", user, friend);
+
+    }
+
+    public void removeFriend(Long userId, Long friendId) {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+
+        if (userId == null || friendId == null) {
+            throw new NotFoundException("User or friend not found");
         }
 
-        if (!userFrom.getFriends().contains(userTo.getId()) || !userTo.getFriends().contains(userFrom.getId())) {
-            log.info("User:{} and User:{} are not friends,no removal required", userTo.getId(), userFrom.getId());
-            return userFrom;
+        if (user.getFriends() == null) {
+            user.setFriends(new HashSet<>());
+        }
+        if (friend.getFriends() == null) {
+            friend.setFriends(new HashSet<>());
         }
 
-        userFrom.getFriends().remove(userTo.getId());
-        userTo.getFriends().remove(userFrom.getId());
+        if (!user.getFriends().contains(friend.getId()) || !friend.getFriends().contains(user.getId())) {
+            log.info("User:{} and User:{} are not friends,no removal required", friend.getId(), user.getId());
+            return;
+        }
+        user.getFriends().remove(friend.getId());
+        friend.getFriends().remove(user.getId());
 
-        userStorage.updateUser(userFrom);
-        userStorage.updateUser(userTo);
+        log.info("User:{} removed from user's friends User:{}", friend.getId(), user.getId());
 
-        log.info("User:{} removed from user's friends User:{}", userTo.getId(), userFrom.getId());
-
-        return userFrom;
     }
 
     public List<User> getFriends(Long userId) {
         User user = getUserById(userId);
+        if (user == null) {
+            throw new NotFoundException("Friends list not found for user id " + userId);
+        }
         Set<Long> friendsId = user.getFriends();
         if (friendsId == null || friendsId.isEmpty()) {
             log.info("No friends found for user with id {}", userId);

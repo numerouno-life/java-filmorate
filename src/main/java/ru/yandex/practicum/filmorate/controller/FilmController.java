@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -49,16 +47,8 @@ public class FilmController {
     // Добавление лайка фильму
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Film> addLike(@PathVariable Long id, @PathVariable Long userId) {
-        Film film = filmService.getFilmById(id);
-        User user = userService.getUserById(userId);
-
-        if (film == null || user == null) {
-            throw new NotFoundException("Film or user not found");
-        }
-
-        filmService.addLikeToFilm(film, user);
+        filmService.addLikeToFilm(id, userId);
         log.debug("PUT /{}/like/{}", id, userId);
-
         return ResponseEntity.ok(filmService.getFilmById(id));
     }
 
@@ -66,19 +56,8 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Film> removeLike(@PathVariable Long id, @PathVariable Long userId) {
         log.debug("DELETE /{}like/{}", id, userId);
-
-        Film film = filmService.getFilmById(id);
-        if (film == null) {
-            throw new NotFoundException("Film with id: " + id + " not found.");
-        }
-
-        User user = userService.getUserById(userId);
-        if (user == null) {
-            throw new NotFoundException("User with id: " + userId + " not found.");
-        }
-
         filmService.removeLike(id, userId);
-        return ResponseEntity.ok(film);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/popular")

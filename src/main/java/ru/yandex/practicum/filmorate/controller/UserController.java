@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundUserException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -50,42 +48,26 @@ public class UserController {
     @GetMapping("/{id}")
     public User getUser(@PathVariable long id) {
         log.info("GET /users/{}", id);
-        User user = userService.getUserById(id);
-        if (user == null) {
-            throw new NotFoundException("User with id " + id + " not found");
-        }
-        return user;
+        return userService.getUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        User user = userService.getUserById(id);
-        User friend = userService.getUserById(friendId);
-        if (user == null || friend == null) {
-            throw new NotFoundException("User or friend not found");
-        }
-        return userService.addFriend(user, friend);
+    public ResponseEntity<User> addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        log.info("PUT /users/{}/friends/{}", id, friendId);
+        userService.addFriend(id, friendId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public ResponseEntity<User> removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
         log.debug("DELETE /users/{}/friends/{}", id, friendId);
-        User user = userService.getUserById(id);
-        User friend = userService.getUserById(friendId);
-        if (user == null || friend == null) {
-            throw new NotFoundUserException("User or friend not found");
-        }
-        userService.removeFriend(user, friend);
-        return ResponseEntity.noContent().build();
+        userService.removeFriend(id, friendId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable Long id) {
         log.debug("GET /users/{}/friends", id);
-        User user = userService.getUserById(id);
-        if (user == null) {
-            throw new NotFoundException("Friends list not found for user id " + id);
-        }
         return userService.getFriends(id);
     }
 
