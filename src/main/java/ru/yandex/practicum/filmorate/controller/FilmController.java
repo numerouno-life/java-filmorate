@@ -1,91 +1,67 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
 
-    private final Map<Long, Film> films = new HashMap<>();
-    private long currentId = 1;
+    private final FilmService filmService;
+    private final UserService userService;
 
-    //добавление фильма
+    @Autowired
+    public FilmController(FilmService filmService, UserService userService) {
+        this.filmService = filmService;
+        this.userService = userService;
+    }
+
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-        log.debug("POST /films with {}", film);
-        validate(film);
-
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-
-        log.info("Film added successful {}", film);
-        return film;
+    public ResponseEntity<Film> createFilm(@Valid @RequestBody Film film) {
+        return new ResponseEntity<>(filmService.addFilm(film), HttpStatus.CREATED);
     }
 
-    //обновление фильма
+    // Обновление фильма
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
-        log.debug("PUT /films with {}", newFilm);
-        if (newFilm.getId() == null || !films.containsKey(newFilm.getId())) {
-            String msg = "Movie with ID:" + newFilm.getId() + " not found.";
-            log.error(msg);
-            throw new ValidationException(msg);
-        }
-
-        validate(newFilm);
-        films.put(newFilm.getId(), newFilm);
-
-        log.info("Film update successful {}", newFilm);
-        return newFilm;
+    public Film update(@Valid @RequestBody Film film) {
+        return filmService.update(film);
     }
 
-    //получение всех фильмов
+    // Получение всех фильмов
     @GetMapping
-    public Collection<Film> allFilms() {
+    public Collection<Film> getAllFilms() {
         log.debug("GET /films");
-        return films.values();
+        return filmService.getAllFilms();
     }
 
-    private long getNextId() {
-        return currentId++;
+    // Добавление лайка фильму
+    @PutMapping("/{id}/like/{userId}")
+    public ResponseEntity<Film> addLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.addLikeToFilm(id, userId);
+        log.debug("PUT /{}/like/{}", id, userId);
+        return ResponseEntity.ok(filmService.getFilmById(id));
     }
 
-    void validate(Film film) {
-        log.debug("Validation started for {}", film);
-        if (film.getName().isBlank()) {
-            String msg = "Film name should not be empty! film=" + film;
-            log.error(msg);
-            throw new ValidationException(msg);
-        }
+    // Удаление лайка у фильма
+    @DeleteMapping("/{id}/like/{userId}")
+    public ResponseEntity<Film> removeLike(@PathVariable Long id, @PathVariable Long userId) {
+        log.debug("DELETE /{}like/{}", id, userId);
+        filmService.removeLike(id, userId);
+        return ResponseEntity.ok().build();
+    }
 
-        if (film.getDescription().length() > 200) {
-            String msg = "Max length description - 200 symbols.";
-            log.error(msg);
-            throw new ValidationException(msg);
-        }
-
-        LocalDate movieBirthday = LocalDate.of(1895, Month.DECEMBER, 28);
-        if (film.getReleaseDate().isBefore(movieBirthday)) {
-            String msg = "release date - no earlier than December 28, 1895";
-            log.error(msg);
-            throw new ValidationException(msg);
-        }
-
-        if (film.getDuration() <= 0) {
-            String msg = "The length of the movie must be a positive number.";
-            log.error(msg);
-            throw new ValidationException(msg);
-        }
+    @GetMapping("/popular")
+    public Collection<Film> getMostPopularFilms(@RequestParam(required = false, defaultValue = "10") String count) {
+        return filmService.getMostPopularFilms(Integer.parseInt(count));
     }
 }
