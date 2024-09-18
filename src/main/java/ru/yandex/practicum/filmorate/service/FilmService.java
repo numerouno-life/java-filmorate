@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -55,14 +54,6 @@ public class FilmService {
     public void removeLike(Long filmId, Long userId) {
         Film film = filmStorage.getFilmById(filmId);
         User user = userService.getUserById(userId);
-        if (film == null) {
-            String msg = "Film with ID: " + filmId + " not found.";
-            log.error("Film with ID: {} not found.", filmId);
-            throw new NotFoundException(msg);
-        }
-        if (user == null) {
-            throw new NotFoundException("User with id: " + userId + " not found.");
-        }
         if (!film.getLikes().contains(userId)) {
             String msg = "User with ID: " + userId + " has not liked this film.";
             log.warn(msg);

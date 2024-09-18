@@ -44,10 +44,6 @@ public class UserService {
     public void addFriend(Long userId, Long friendId) {
         User user = getUserById(userId);
         User friend = userStorage.getUserById(friendId);
-        if (user == null || friend == null) {
-            throw new NotFoundException("User or friend not found");
-        }
-
         if (user.getFriends() == null) {
             user.setFriends(new HashSet<>());
         }
@@ -62,18 +58,17 @@ public class UserService {
         Set<Long> friendsTo = friend.getFriends();
         friendsFrom.add(friend.getId());
         friendsTo.add(user.getId());
-        user.setFriends(friendsFrom);
         log.info("User:{} and User:{} now friends", user, friend);
 
     }
 
     public void removeFriend(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-
         if (userId == null || friendId == null) {
             throw new NotFoundException("User or friend not found");
         }
+
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
 
         if (user.getFriends() == null) {
             user.setFriends(new HashSet<>());
@@ -95,9 +90,6 @@ public class UserService {
 
     public List<User> getFriends(Long userId) {
         User user = getUserById(userId);
-        if (user == null) {
-            throw new NotFoundException("Friends list not found for user id " + userId);
-        }
         Set<Long> friendsId = user.getFriends();
         if (friendsId == null || friendsId.isEmpty()) {
             log.info("No friends found for user with id {}", userId);
