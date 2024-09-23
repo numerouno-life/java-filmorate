@@ -26,7 +26,7 @@ JOIN film_genres fg ON f.id = fg.film_id
 JOIN genres g ON fg.genre_id = g.id
 WHERE f.id = ?;
 
-2. **Запрос пользователя по ID**:
+2. Запрос пользователя по ID
 SELECT u.email,
        u.login,
        u.name,
