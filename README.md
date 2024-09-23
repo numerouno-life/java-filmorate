@@ -41,7 +41,7 @@ FROM users u
 JOIN friendships f ON u.id = f.friend_id
 WHERE f.user_id = ? AND f.status = 'CONFIRMED';
 
-4.Поиск всех фильмов, которым пользователь поставил лайк:
+4. Поиск всех фильмов, которым пользователь поставил лайк:
 SELECT f.name,
        f.description,
        f.releaseDate
