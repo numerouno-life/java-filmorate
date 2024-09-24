@@ -1,6 +1,6 @@
 # java-filmorate
 Template repository for Filmorate project.
-![Database schema][(https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramm.png)](https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramme.png)
+![Database schema](https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramm.png)](https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramme.png).
 
 - Описание БД.
 users — хранит информацию о пользователях (email, логин, имя, дата рождения).
