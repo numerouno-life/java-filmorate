@@ -4,19 +4,19 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.validators.MinimumDate;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 
-/**
- * Film.
- */
 @Data
-@Builder
+@EqualsAndHashCode
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class Film {
     private Long id;
 
@@ -38,5 +38,16 @@ public class Film {
     @Min(1)
     private long duration;
 
-    private Set<Long> likes;
+    private Collection<Like> likes = new ArrayList<>();
+
+    @NotNull
+    private Mpa mpa;
+
+    private Collection<Genre> genres = new ArrayList<>();
+
+    private Long rating;
+
+    public Long getRating() {
+        return rating != null ? rating : 0L;
+    }
 }
