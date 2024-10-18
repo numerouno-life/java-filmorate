@@ -38,11 +38,13 @@ public class Film {
     @Min(1)
     private long duration;
 
+    @Builder.Default
     private Collection<Like> likes = new ArrayList<>();
 
     @NotNull
     private Mpa mpa;
 
+    @Builder.Default
     private Collection<Genre> genres = new ArrayList<>();
 
     private Long rating;

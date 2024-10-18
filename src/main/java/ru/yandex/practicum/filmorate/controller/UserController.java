@@ -76,4 +76,9 @@ public class UserController {
         return userService.getMutualFriends(userService.getUserById(id), userService.getUserById(otherId));
     }
 
+    @DeleteMapping
+    public String removeUser(@Valid @RequestBody User user) {
+        return userService.removeUser(user);
+    }
+
 }
