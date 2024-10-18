@@ -60,4 +60,11 @@ public class ErrorHandler {
         log.error("Unexpected error: {}", e.getMessage(), e);
         return new ErrorResponse("An unexpected error occurred. Please try again later.", 500);
     }
+
+    @ExceptionHandler(DataException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDataException(DataException e) {
+        log.error("Data error: {}", e.getMessage(), e);
+        return new ErrorResponse(e.getMessage(), 404);
+    }
 }

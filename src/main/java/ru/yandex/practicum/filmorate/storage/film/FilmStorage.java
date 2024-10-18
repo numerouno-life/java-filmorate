@@ -10,7 +10,7 @@ public interface FilmStorage {
 
     String removeFilm(Film film);
 
-    Film update(Film film);
+    Film updateFilm(Film film);
 
     Collection<Film> getAllFilms();
 
