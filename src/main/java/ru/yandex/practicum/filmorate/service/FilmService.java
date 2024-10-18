@@ -39,13 +39,23 @@ public class FilmService {
 
     public void addLikeToFilm(Film filmId, User userId) {
         log.info("Add like for film {} by the user {}", filmId, userId);
-        userStorage.getUserById(userId.getId());
-        filmStorage.getFilmById(filmId.getId());
+        if (userStorage.getUserById(userId.getId()) == null) {
+            throw new NotFoundException("User with ID: " + userId.getId() + " not found");
+        }
+        if (filmStorage.getFilmById(filmId.getId()) == null) {
+            throw new NotFoundException("Film with ID: " + filmId.getId() + "not found");
+        }
         likeStorage.addLike(filmId.getId(), userId.getId());
     }
 
     public boolean removeLike(Long filmId, Long userId) {
         log.info("User with ID: {} removed like from film with ID: {}", userId, filmId);
+        if (filmStorage.getFilmById(filmId) == null) {
+            throw new NotFoundException("Film with ID: " + filmId + " not found");
+        }
+        if (userStorage.getUserById(userId) == null) {
+            throw new NotFoundException("User with ID: " + userId + " not found");
+        }
         return likeStorage.deleteLike(filmId, userId);
     }
 
