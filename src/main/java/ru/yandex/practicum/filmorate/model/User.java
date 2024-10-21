@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -32,5 +33,5 @@ public class User {
     @Past(message = "Date must not be greater than current date")
     private LocalDate birthday;
 
-    private Set<Long> friends;
+    private Set<Long> friends = new HashSet<>();
 }
