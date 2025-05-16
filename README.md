@@ -104,4 +104,4 @@ LIMIT 10;
 Рейтинг фильмов по количеству лайков
 
 Schema
-![Database schema](https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramme.png).
+![Database schema]([https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramme.png](https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramme.png)).
