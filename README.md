@@ -52,7 +52,6 @@ WHERE f.id = ?;
 Возвращает полную информацию о конкретном фильме, включая его рейтинг MPA и жанры
 
 ### 2. Получение данных пользователя
-```sql
 SELECT 
     u.email,
     u.login,
@@ -63,7 +62,6 @@ WHERE u.id = ?;
 Базовый запрос для получения профиля пользователя
 
 3. Список друзей пользователя
-```sql
 SELECT 
     u.id,
     u.login,
@@ -75,7 +73,6 @@ AND f.status = 'CONFIRMED';
 Возвращает только подтвержденных друзей (двусторонняя дружба)
 
 4. Фильмы, понравившиеся пользователю
-```sql
 SELECT 
     f.name,
     f.description,
@@ -87,7 +84,6 @@ ORDER BY f.release_date DESC;
 Список фильмов с сортировкой по дате выхода (новые первыми)
 
 5. Жанры конкретного фильма
-```sql
 SELECT 
     g.description AS genre
 FROM genres g
@@ -96,7 +92,6 @@ WHERE fg.film_id = ?;
 Возвращает все жанры, связанные с указанным фильмом
 
 6. ТОП-10 популярных фильмов
-```sql
 SELECT 
     f.id,
     f.name,
@@ -107,5 +102,6 @@ GROUP BY f.id, f.name
 ORDER BY likes_count DESC
 LIMIT 10;
 Рейтинг фильмов по количеству лайков
+
 Schema
 ![Database schema](https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramme.png).
