@@ -35,48 +35,31 @@
 
 Примеры запросов для основных операций приложения.
 
-Запрос пользователя по ID
-SELECT f.name,
-       f.description,
-       f.releaseDate,
-       f.duration,
-       m.rating AS mpa_rating,
-       g.description AS genre
-FROM films f
-JOIN mpa m ON f.mpa_id = m.id
-JOIN film_genres fg ON f.id = fg.film_id
-JOIN genres g ON fg.genre_id = g.id
-WHERE f.id = ?;
-
-2. Запрос пользователя по ID
-SELECT u.email,
-       u.login,
-       u.name,
-       u.birthday
-FROM users u
-WHERE u.id = ?;
-
-3. Поиск всех друзей пользователя по ID
-SELECT u.id,
-       u.login,
-       u.name
-FROM users u
-JOIN friendships f ON u.id = f.friend_id
-WHERE f.user_id = ? AND f.status = 'CONFIRMED';
-
-4. Поиск всех фильмов, которым пользователь поставил лайк
-SELECT f.name,
-       f.description,
-       f.releaseDate
-FROM films f
-JOIN likes l ON f.id = l.films_id
-WHERE l.user_id = ?;
-
-5. Запрос всех жанров для конкретного фильма
-SELECT g.description AS genre
-FROM genres g
-JOIN film_genres fg ON g.id = fg.genre_id
-WHERE fg.film_id = ?;
+erDiagram
+    users ||--o{ friendships : "friends"
+    users ||--o{ likes : "likes"
+    films ||--o{ likes : "likes"
+    films ||--o{ film_genres : "genres"
+    films ||--|| mpa : "rating"
+    genres ||--o{ film_genres : "films"
+    
+    users {
+        int id PK
+        varchar email
+        varchar login
+        varchar name
+        date birthday
+    }
+    
+    films {
+        int id PK
+        varchar name
+        text description
+        date release_date
+        int duration
+        int mpa_id FK
+    }
+📊 Примеры SQL-запросов
 
 Schema
 ![Database schema](https://github.com/numerouno-life/java-filmorate/blob/main/ER-diagramme.png).
